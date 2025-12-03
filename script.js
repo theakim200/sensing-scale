@@ -310,14 +310,15 @@ function addItemToComparison(item) {
     itemVisual.style.position = 'relative';
     itemVisual.style.overflow = 'hidden';
     itemVisual.style.margin = '0 auto';
-    // Border removed - no border on visual area
+    itemVisual.style.border = '1px solid #ccc'; // Default border
     
     // Check if item has a predefined image (from defaultItems)
     const hasPredefinedImage = defaultItems.some(defaultItem => defaultItem.name === item.name && defaultItem.image);
     const imageUrl = item.image;
     
     if (imageUrl && hasPredefinedImage) {
-        // Predefined item with image - just display it
+        // Predefined item with image - remove border and just display it
+        itemVisual.style.border = 'none'; // Remove border for Add Item objects
         const img = document.createElement('img');
         img.style.width = '100%';
         img.style.height = '100%';
