@@ -9,71 +9,67 @@
 <body>
     <div>
         <div class="controller">
-        <div>
-            <h1>Sensing Scale</h1>            
-        </div>
-        
-        <table>
-            <tr>
-                <td>Name:</td>
-                <td><input type="text" id="item-name" placeholder="Your Item"></td>
-                <td>width:</td>
-                <td><input type="number" id="item-width" value="10"></td>
-                <td>height:</td>
-                <td><input type="number" id="item-height" value="10"></td>
-                <td>units:</td>
-                <td>
-                    <select id="item-unit">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="m">m</option>
-                        <option value="km">km</option>
-                        <option value="inch" selected>inch</option>
-                        <option value="ft">ft</option>
-                        <option value="yard">yard</option>
-                        <option value="mile">mile</option>
-                        <option value="pt">pt</option>
-                        <option value="μm">μm</option>
-                    </select>
-                </td>
-                <td><button id="add-to-list">Add</button></td>
-            </tr>
-        </table>
-        
-        <div>
-            <button id="screen-mode" style="background-color: black; color: white;">Screen Mode</button>
-            <button id="real-life-mode">Real Life Mode</button>
-        </div>
-        
-        <div>
-            <button id="add-default-item">Add Item</button>
-            <div id="dropdown-menu" style="display: none; position: absolute; background-color: white; border: 1px solid black;">
-                <!-- Default items will be added here via JavaScript -->
+            
+            <div id="controller-content">
+                <div>
+                    <h1>Sensing Scale</h1>            
+                </div>
+                <table>
+                    <tr>
+                        <td>Name:</td>
+                        <td><input type="text" id="item-name" placeholder="Your Item"></td>
+                        <td>width:</td>
+                        <td><input type="number" id="item-width" value="10"></td>
+                        <td>height:</td>
+                        <td><input type="number" id="item-height" value="10"></td>
+                        <td>units:</td>
+                        <td>
+                            <select id="item-unit">
+                                <option value="mm">mm</option>
+                                <option value="cm">cm</option>
+                                <option value="m">m</option>
+                                <option value="km">km</option>
+                                <option value="inch" selected>inch</option>
+                                <option value="ft">ft</option>
+                                <option value="yard">yard</option>
+                                <option value="mile">mile</option>
+                                <option value="pt">pt</option>
+                                <option value="μm">μm</option>
+                            </select>
+                        </td>
+                        <td><button id="add-to-list">Add</button></td>
+                    </tr>
+                </table>
+                
+                <div>
+                    <button id="screen-mode" style="background-color: black; color: white;">Screen Mode</button>
+                    <button id="real-life-mode">Real Life Mode</button>
+                </div>
+                
+                <div>
+                    <button id="add-default-item">Add Item</button>
+                    <div id="dropdown-menu" style="display: none; position: absolute; background-color: white; border: 1px solid black;">
+                        <!-- Default items will be added here via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Calibration section -->
+                <div id="calibration-section" style="display: none; margin-top: 20px; border: 1px solid black; padding: 10px;">
+                    <h3>Calibration</h3>
+                    <p>Place your card on screen and match it to the box below. This calibration registers your body into digital space.</p>
+                    <input type="range" id="calibration-slider" min="1" max="10" step="0.1" value="3.78">
+                    <button id="save-calibration">Save Calibration</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <button id="edit-calibration" style="display: none;">Edit Calibration</button>
+                <button id="toggle-ui">Hide Controller</button>
             </div>
         </div>
-
-        <!-- Calibration section -->
-        <div id="calibration-section" style="display: none; margin-top: 20px; border: 1px solid black; padding: 10px;">
-            <h3>Calibration</h3>
-            <p>Place your card on screen and match it to the box below. This calibration registers your body into digital space.</p>
-            <input type="range" id="calibration-slider" min="1" max="10" step="0.1" value="3.78">
-            <button id="save-calibration">Save Calibration</button>
-        </div>
-        <button id="edit-calibration" style="display: none; margin-top: 10px;">Edit Calibration</button>
-        </div>
-        
-        <button id="toggle-ui" style="margin-top: 10px; margin-left: 8px;">Hide Controller</button>
         
         <div id="comparison-area" style="margin-top: 20px;">
             <!-- Items will be added here via JavaScript -->
-        </div>
-        
-        <!-- Minimap -->
-        <div id="minimap-container" style="position: fixed; bottom: 10px; left: 10px; max-width: 500px; max-height: 300px; border: 1px solid black; background: white; overflow: hidden;">
-            <div id="minimap-content" style="position: relative; transform-origin: top left;">
-                <!-- Minimap items will be rendered here -->
-            </div>
-            <div id="minimap-viewport" style="position: absolute; border: 2px solid red; cursor: move;"></div>
         </div>
     </div>
 

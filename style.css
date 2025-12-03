@@ -9,7 +9,6 @@ body {
     flex-direction: row;
     overflow-x: scroll;
     overflow-y: hidden; /* Hide vertical scrollbar */
-    max-height: calc(100vh - 150px); /* Limit height to viewport minus header space */
 }
 #dropdown-menu {
     z-index: 100;

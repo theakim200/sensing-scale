@@ -41,11 +41,6 @@ let isRealLifeMode = false;
 // Custom item image URL
 let customItemImageUrl = null;
 
-// Minimap settings
-const ID_CARD_MIN_PIXELS = 2; // ID Card minimum width in minimap
-const ID_CARD_WIDTH_MM = 85.6; // ID Card actual width in mm
-let minimapScale = 1; // Current minimap scale factor
-
 // DOM elements
 const comparisonArea = document.getElementById('comparison-area');
 const screenModeBtn = document.getElementById('screen-mode');
@@ -57,9 +52,6 @@ const calibrationSection = document.getElementById('calibration-section');
 const calibrationSlider = document.getElementById('calibration-slider');
 const saveCalibrationBtn = document.getElementById('save-calibration');
 const editCalibrationBtn = document.getElementById('edit-calibration');
-const minimapContainer = document.getElementById('minimap-container');
-const minimapContent = document.getElementById('minimap-content');
-const minimapViewport = document.getElementById('minimap-viewport');
 const toggleUIBtn = document.getElementById('toggle-ui');
 
 // Initialize the app
@@ -136,186 +128,23 @@ function initApp() {
         calibrationSlider.value = pixelsPerMm;
     }
     
-    // Initialize minimap
-    updateMinimap();
-    
-    // Update minimap on scroll
-    comparisonArea.addEventListener('scroll', updateMinimapViewport);
-    
-    // Setup minimap interactions
-    setupMinimapInteractions();
-    
     // Toggle UI button
     let isUIHidden = false;
     toggleUIBtn.addEventListener('click', () => {
         isUIHidden = !isUIHidden;
-        const controller = document.querySelector('.controller');
+        const controllerContent = document.getElementById('controller-content');
         
         if (isUIHidden) {
-            controller.style.display = 'none';
+            controllerContent.style.display = 'none';
             toggleUIBtn.textContent = 'Show Controller';
         } else {
-            controller.style.display = 'block';
+            controllerContent.style.display = 'block';
             toggleUIBtn.textContent = 'Hide Controller';
         }
     });
 }
 
 // Setup minimap drag and click interactions
-function setupMinimapInteractions() {
-    let isDraggingViewport = false;
-    let isDraggingMinimap = false;
-    let dragStartX, dragStartY;
-    let scrollStartLeft, scrollStartTop;
-    let minimapStartX, minimapStartY;
-    let hasDragged = false; // Track if actual dragging occurred
-    
-    // Red box (viewport) drag
-    minimapViewport.addEventListener('mousedown', (e) => {
-        isDraggingViewport = true;
-        hasDragged = false;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        scrollStartLeft = comparisonArea.scrollLeft;
-        scrollStartTop = comparisonArea.scrollTop;
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    
-    // Minimap background drag (panning)
-    minimapContainer.addEventListener('mousedown', (e) => {
-        // Only if not clicking on viewport
-        if (e.target === minimapViewport) return;
-        
-        isDraggingMinimap = true;
-        hasDragged = false;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        minimapStartX = minimapContent.offsetLeft || 0;
-        minimapStartY = minimapContent.offsetTop || 0;
-        e.preventDefault();
-    });
-    
-    // Mouse move handler
-    document.addEventListener('mousemove', (e) => {
-        if (isDraggingViewport) {
-            hasDragged = true;
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-            
-            // Convert minimap delta to scroll delta
-            comparisonArea.scrollLeft = scrollStartLeft + (deltaX / minimapScale);
-            comparisonArea.scrollTop = scrollStartTop + (deltaY / minimapScale);
-        } else if (isDraggingMinimap) {
-            hasDragged = true;
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-            
-            minimapContent.style.left = `${minimapStartX + deltaX}px`;
-            minimapContent.style.top = `${minimapStartY + deltaY}px`;
-        }
-    });
-    
-    // Mouse up handler
-    document.addEventListener('mouseup', () => {
-        isDraggingViewport = false;
-        isDraggingMinimap = false;
-        // Reset hasDragged after a short delay to prevent click event
-        setTimeout(() => {
-            hasDragged = false;
-        }, 10);
-    });
-    
-    // Click to jump (option 3)
-    minimapContainer.addEventListener('click', (e) => {
-        // Don't jump if dragging occurred or clicking on viewport itself
-        if (hasDragged || e.target === minimapViewport) return;
-        
-        const rect = minimapContainer.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-        
-        // Center viewport on click position
-        const viewportWidth = comparisonArea.clientWidth;
-        const viewportHeight = comparisonArea.clientHeight;
-        
-        comparisonArea.scrollLeft = (clickX / minimapScale) - (viewportWidth / 2);
-        comparisonArea.scrollTop = (clickY / minimapScale) - (viewportHeight / 2);
-    });
-}
-
-// Calculate minimap scale based on ID Card minimum size constraint
-function calculateMinimapScale() {
-    const comparisonWidth = comparisonArea.scrollWidth;
-    const comparisonHeight = comparisonArea.scrollHeight;
-    
-    // Calculate scale that would fit everything in 500x300
-    const scaleToFit = Math.min(
-        500 / comparisonWidth,
-        300 / comparisonHeight
-    );
-    
-    // Calculate minimum scale based on ID Card size constraint (2px minimum)
-    // ID Card width in current mode
-    let idCardWidthPx;
-    if (isRealLifeMode) {
-        idCardWidthPx = ID_CARD_WIDTH_MM * pixelsPerMm;
-    } else {
-        const scaleFactor = 0.8;
-        idCardWidthPx = ID_CARD_WIDTH_MM * scaleFactor;
-    }
-    
-    const minScaleForIdCard = ID_CARD_MIN_PIXELS / idCardWidthPx;
-    
-    // Use scaleToFit, but don't go below minScaleForIdCard (ID Card must be at least 2px)
-    return Math.max(scaleToFit, minScaleForIdCard);
-}
-
-// Update minimap display
-function updateMinimap() {
-    minimapScale = calculateMinimapScale();
-    
-    // Apply scale and flex layout to minimap content
-    minimapContent.style.transform = `scale(${minimapScale})`;
-    minimapContent.style.display = 'flex';
-    minimapContent.style.flexDirection = 'row';
-    minimapContent.style.alignItems = 'flex-start';
-    
-    // Set minimap container size
-    const scaledWidth = comparisonArea.scrollWidth * minimapScale;
-    const scaledHeight = comparisonArea.scrollHeight * minimapScale;
-    
-    minimapContainer.style.width = `${Math.min(scaledWidth, 500)}px`;
-    minimapContainer.style.height = `${Math.min(scaledHeight, 300)}px`;
-    
-    // Clone comparison area items into minimap
-    minimapContent.innerHTML = '';
-    const items = comparisonArea.querySelectorAll('[data-item-id]');
-    items.forEach(item => {
-        const clone = item.cloneNode(true);
-        minimapContent.appendChild(clone);
-    });
-    
-    updateMinimapViewport();
-}
-
-// Update minimap viewport (red box) position and size
-function updateMinimapViewport() {
-    // Use comparison area's client dimensions (visible viewport)
-    const viewportWidth = comparisonArea.clientWidth;
-    const viewportHeight = comparisonArea.clientHeight;
-    const scrollLeft = comparisonArea.scrollLeft;
-    const scrollTop = comparisonArea.scrollTop;
-    
-    // Red box is positioned absolute to minimapContainer, NOT relative to minimapContent
-    // So we don't add content offset - it stays fixed while content pans
-    minimapViewport.style.width = `${viewportWidth * minimapScale}px`;
-    minimapViewport.style.height = `${viewportHeight * minimapScale}px`;
-    minimapViewport.style.left = `${scrollLeft * minimapScale}px`;
-    minimapViewport.style.top = `${scrollTop * minimapScale}px`;
-    minimapViewport.style.display = 'block';
-}
-
 // Try to detect the screen's pixel density
 function detectPixelDensity() {
     try {
@@ -404,9 +233,6 @@ function setMode(mode) {
     
     // Update all items to reflect the new mode
     updateAllItems();
-    
-    // Update minimap for new mode
-    setTimeout(updateMinimap, 0);
 }
 
 // Convert dimensions to millimeters
@@ -596,9 +422,6 @@ function addItemToComparison(item) {
     
     // Update its size
     updateItemSize(itemElement, item);
-    
-    // Update minimap
-    setTimeout(updateMinimap, 0); // Defer to allow DOM update
     
     // Return the unique ID
     return uniqueId;
