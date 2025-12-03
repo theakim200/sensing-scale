@@ -104,6 +104,7 @@ function initApp() {
         calibrationSection.style.display = 'none';
         editCalibrationBtn.style.display = 'inline-block';
         localStorage.setItem('pixelsPerMm', pixelsPerMm);
+        localStorage.setItem('calibrationSaved', 'true'); // Mark that calibration has been saved
     });
     
     // Edit calibration button
@@ -189,10 +190,15 @@ function setMode(mode) {
         realLifeModeBtn.style.backgroundColor = 'black';
         realLifeModeBtn.style.color = 'white';
         
-        // Show calibration section or edit button based on whether calibration is saved
-        if (calibrationSection.style.display === 'none') {
+        // Check if calibration has been saved before
+        const hasCalibrationBeenSaved = localStorage.getItem('calibrationSaved') === 'true';
+        
+        if (hasCalibrationBeenSaved) {
+            // Show edit button, hide section
+            calibrationSection.style.display = 'none';
             editCalibrationBtn.style.display = 'inline-block';
         } else {
+            // First time - show calibration section
             calibrationSection.style.display = 'block';
             editCalibrationBtn.style.display = 'none';
         }
