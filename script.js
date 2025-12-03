@@ -334,9 +334,9 @@ function addItemToComparison(item) {
         // Special handling for calibration card (ID Card)
         if (item.isCalibrationCard) {
             // Calibration card - no upload, just display text based on mode
-            textOverlay.textContent = "Universal reference point"; // Default for screen mode
-            textOverlay.dataset.screenText = "Universal reference point";
-            textOverlay.dataset.realLifeText = "Place your card here to register your body into digital space";
+            textOverlay.textContent = ""; // Empty in screen mode
+            textOverlay.dataset.screenText = "";
+            textOverlay.dataset.realLifeText = "Universal reference point";
             itemElement.dataset.isCalibrationCard = "true";
         } else {
             // Regular custom item - clickable for upload
