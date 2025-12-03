@@ -285,6 +285,7 @@ function updateMinimap() {
 
 // Update minimap viewport (red box) position and size
 function updateMinimapViewport() {
+    // Use comparison area's client dimensions (visible viewport)
     const viewportWidth = comparisonArea.clientWidth;
     const viewportHeight = comparisonArea.clientHeight;
     const scrollLeft = comparisonArea.scrollLeft;
@@ -295,6 +296,7 @@ function updateMinimapViewport() {
     minimapViewport.style.height = `${viewportHeight * minimapScale}px`;
     minimapViewport.style.left = `${scrollLeft * minimapScale}px`;
     minimapViewport.style.top = `${scrollTop * minimapScale}px`;
+    minimapViewport.style.display = 'block';
 }
 
 // Try to detect the screen's pixel density
