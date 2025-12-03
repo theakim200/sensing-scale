@@ -67,6 +67,12 @@ function initApp() {
     // NOTE: Custom item will be added by user via "Add to list" button
     // No longer auto-adding "Your Item" on page load
     
+    // Add to list button handler
+    const addToListBtn = document.getElementById('add-to-list');
+    if (addToListBtn) {
+        addToListBtn.addEventListener('click', addCustomItemToList);
+    }
+    
     // Set up event listeners
     screenModeBtn.addEventListener('click', () => setMode('screen'));
     realLifeModeBtn.addEventListener('click', () => setMode('real-life'));
@@ -199,13 +205,8 @@ function createSafeSelector(name) {
 
 // Add an item to the comparison area
 function addItemToComparison(item) {
-    // Check if the item already exists - FIXED VERSION using safe selector
-    const existingItem = document.querySelector(`[data-name="${createSafeSelector(item.name)}"]`);
-    if (existingItem) {
-        // Update instead of adding
-        updateItemSize(existingItem, item);
-        return;
-    }
+    // Generate unique ID for this item instance
+    const uniqueId = Date.now() + Math.random();
     
     // Create new item container
     const itemElement = document.createElement('div');
@@ -213,6 +214,7 @@ function addItemToComparison(item) {
     itemElement.style.margin = '10px';
     itemElement.style.verticalAlign = 'top';
     itemElement.style.textAlign = 'center';
+    itemElement.dataset.itemId = uniqueId; // Use unique ID instead of name
     itemElement.dataset.name = item.name;
     itemElement.dataset.width = item.width;
     itemElement.dataset.height = item.height;
@@ -240,40 +242,20 @@ function addItemToComparison(item) {
     itemVisual.style.margin = '0 auto';
     itemVisual.style.border = '1px solid #ccc';
     
-    // Special handling for "Your Item" with upload button if no image yet
-    if (item.name === "Your Item" && !customItemImageUrl) {
-        itemVisual.style.backgroundColor = '#f0f0f0';
-        
-        const uploadPrompt = document.createElement('div');
-        uploadPrompt.textContent = "Click to upload image";
-        uploadPrompt.style.position = 'absolute';
-        uploadPrompt.style.top = '50%';
-        uploadPrompt.style.left = '50%';
-        uploadPrompt.style.transform = 'translate(-50%, -50%)';
-        uploadPrompt.style.color = '#333';
-        uploadPrompt.style.fontWeight = 'bold';
-        uploadPrompt.style.cursor = 'pointer';
-        
-        uploadPrompt.addEventListener('click', () => {
-            document.getElementById('image-upload').click();
-        });
-        
-        itemVisual.appendChild(uploadPrompt);
-        itemVisual.style.cursor = 'pointer';
-        // Click event is already on uploadPrompt, no need to add it to itemVisual too
-    } 
-    // Add image if available
-    else if (itemElement.dataset.image) {
+    // Check if item has a predefined image (from defaultItems)
+    const hasPredefinedImage = defaultItems.some(defaultItem => defaultItem.name === item.name && defaultItem.image);
+    const imageUrl = item.image;
+    
+    if (imageUrl && hasPredefinedImage) {
+        // Predefined item with image - just display it
         const img = document.createElement('img');
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'contain';
+        img.src = imageUrl;
         
-        // First check if the image exists, use placeholder if not
-        const imageUrl = itemElement.dataset.image;
         img.onerror = function() {
-            // If image fails to load, show a colored rectangle with the item name
-            this.src = '';
+            // If image fails to load, show item name
             this.style.display = 'none';
             itemVisual.style.backgroundColor = '#f0f0f0';
             
@@ -288,14 +270,14 @@ function addItemToComparison(item) {
             itemVisual.appendChild(textOverlay);
         };
         
-        img.src = imageUrl;
         itemVisual.appendChild(img);
     } else {
-        // No image, just use a colored box
+        // Custom item (no predefined image) - make it clickable for upload
         itemVisual.style.backgroundColor = '#f0f0f0';
+        itemVisual.style.cursor = 'pointer';
         
         const textOverlay = document.createElement('div');
-        textOverlay.textContent = item.name;
+        textOverlay.textContent = "Click to upload image";
         textOverlay.style.position = 'absolute';
         textOverlay.style.top = '50%';
         textOverlay.style.left = '50%';
@@ -303,6 +285,13 @@ function addItemToComparison(item) {
         textOverlay.style.color = '#333';
         textOverlay.style.fontWeight = 'bold';
         itemVisual.appendChild(textOverlay);
+        
+        // Add click handler to open file picker and store which item was clicked
+        itemVisual.addEventListener('click', () => {
+            // Store the item ID so we know which item to update when image is selected
+            window.currentUploadItemId = uniqueId;
+            document.getElementById('image-upload').click();
+        });
     }
     
     // Create the info section
@@ -438,7 +427,7 @@ function updateItemSize(itemElement, item) {
 
 // Update all items in the comparison area
 function updateAllItems() {
-    const items = document.querySelectorAll('[data-name]');
+    const items = document.querySelectorAll('[data-item-id]');
     items.forEach(itemElement => {
         const item = {
             name: itemElement.dataset.name,
@@ -473,6 +462,35 @@ function updateCustomItem() {
     addItemToComparison(customItem);
 }
 
+// Add custom item to list from input fields
+function addCustomItemToList() {
+    const name = document.getElementById('item-name').value || 'Your Item';
+    const width = parseFloat(document.getElementById('item-width').value) || 0;
+    const height = parseFloat(document.getElementById('item-height').value) || 0;
+    const unit = document.getElementById('item-unit').value;
+    
+    // Validate inputs
+    if (width <= 0 || height <= 0) {
+        alert('Please enter valid width and height values');
+        return;
+    }
+    
+    const customItem = {
+        name: name,
+        width: width,
+        height: height,
+        unit: unit
+        // No image - user will add it by clicking the item after it's added
+    };
+    
+    addItemToComparison(customItem);
+    
+    // Reset input fields
+    document.getElementById('item-name').value = 'Your Item';
+    document.getElementById('item-width').value = '10';
+    document.getElementById('item-height').value = '10';
+}
+
 // Set up image upload functionality
 function setupImageUpload() {
     // Check if the file input already exists
@@ -492,11 +510,33 @@ function setupImageUpload() {
                 const reader = new FileReader();
                 
                 reader.onload = (e) => {
-                    // Store the image URL
-                    customItemImageUrl = e.target.result;
+                    const imageDataUrl = e.target.result;
                     
-                    // Update the custom item with the new image
-                    updateCustomItem();
+                    // Find the item that was clicked
+                    const targetItem = document.querySelector(`[data-item-id="${window.currentUploadItemId}"]`);
+                    if (targetItem) {
+                        // Update the item's image
+                        targetItem.dataset.image = imageDataUrl;
+                        
+                        // Update the visual
+                        const visual = targetItem.querySelector('div:nth-child(2)');
+                        visual.innerHTML = '';
+                        visual.style.backgroundColor = '';
+                        visual.style.cursor = 'pointer';
+                        
+                        const img = document.createElement('img');
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'contain';
+                        img.src = imageDataUrl;
+                        visual.appendChild(img);
+                        
+                        // Keep click handler to allow replacing image
+                        visual.addEventListener('click', () => {
+                            window.currentUploadItemId = targetItem.dataset.itemId;
+                            document.getElementById('image-upload').click();
+                        });
+                    }
                 };
                 
                 reader.readAsDataURL(file);
