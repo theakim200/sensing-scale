@@ -60,6 +60,7 @@ const editCalibrationBtn = document.getElementById('edit-calibration');
 const minimapContainer = document.getElementById('minimap-container');
 const minimapContent = document.getElementById('minimap-content');
 const minimapViewport = document.getElementById('minimap-viewport');
+const toggleUIBtn = document.getElementById('toggle-ui');
 
 // Initialize the app
 function initApp() {
@@ -143,6 +144,21 @@ function initApp() {
     
     // Setup minimap interactions
     setupMinimapInteractions();
+    
+    // Toggle UI button
+    let isUIHidden = false;
+    toggleUIBtn.addEventListener('click', () => {
+        isUIHidden = !isUIHidden;
+        const controller = document.querySelector('.controller');
+        
+        if (isUIHidden) {
+            controller.style.display = 'none';
+            toggleUIBtn.textContent = 'Show UI';
+        } else {
+            controller.style.display = 'block';
+            toggleUIBtn.textContent = 'Hide UI';
+        }
+    });
 }
 
 // Setup minimap drag and click interactions
@@ -291,11 +307,15 @@ function updateMinimapViewport() {
     const scrollLeft = comparisonArea.scrollLeft;
     const scrollTop = comparisonArea.scrollTop;
     
-    // Scale viewport dimensions and position
+    // Get minimap content offset (from panning)
+    const contentOffsetX = parseFloat(minimapContent.style.left) || 0;
+    const contentOffsetY = parseFloat(minimapContent.style.top) || 0;
+    
+    // Scale viewport dimensions and position, accounting for content offset
     minimapViewport.style.width = `${viewportWidth * minimapScale}px`;
     minimapViewport.style.height = `${viewportHeight * minimapScale}px`;
-    minimapViewport.style.left = `${scrollLeft * minimapScale}px`;
-    minimapViewport.style.top = `${scrollTop * minimapScale}px`;
+    minimapViewport.style.left = `${(scrollLeft * minimapScale) + contentOffsetX}px`;
+    minimapViewport.style.top = `${(scrollTop * minimapScale) + contentOffsetY}px`;
     minimapViewport.style.display = 'block';
 }
 
