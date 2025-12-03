@@ -1,6 +1,6 @@
 // Default items database with image paths
 const defaultItems = [
-    { name: "ID Card", width: 85.6, height: 54, unit: "mm"},
+    { name: "ID Card", width: 85.6, height: 54, unit: "mm", isCalibrationCard: true }, // Special - calibration reference only
     { name: "A4 Paper", width: 210, height: 297, unit: "mm", image: "src/a4.png" },
     { name: "US Letter", width: 215.9, height: 279.4, unit: "mm", image: "src/a4.png" },
     { name: "Tabloid/Ledger", width: 279.4, height: 431.8, unit: "mm", image: "src/a4.png" },
@@ -157,6 +157,9 @@ function detectPixelDensity() {
 // Populate dropdown menu with default items
 function populateDropdownMenu() {
     defaultItems.forEach(item => {
+        // Skip calibration card - it shouldn't be in the dropdown
+        if (item.isCalibrationCard) return;
+        
         const button = document.createElement('button');
         button.textContent = `${item.name} (${item.width}×${item.height} ${item.unit})`;
         button.addEventListener('click', () => {
@@ -315,26 +318,40 @@ function addItemToComparison(item) {
         
         itemVisual.appendChild(img);
     } else {
-        // Custom item (no predefined image) - make it clickable for upload
+        // Custom item (no predefined image) - different behavior for calibration card vs user items
         itemVisual.style.backgroundColor = '#f0f0f0';
-        itemVisual.style.cursor = 'pointer';
         
         const textOverlay = document.createElement('div');
-        textOverlay.textContent = "Click to upload image";
         textOverlay.style.position = 'absolute';
         textOverlay.style.top = '50%';
         textOverlay.style.left = '50%';
         textOverlay.style.transform = 'translate(-50%, -50%)';
         textOverlay.style.color = '#333';
         textOverlay.style.fontWeight = 'bold';
-        itemVisual.appendChild(textOverlay);
+        textOverlay.style.textAlign = 'center';
+        textOverlay.style.padding = '10px';
         
-        // Add click handler to open file picker and store which item was clicked
-        itemVisual.addEventListener('click', () => {
-            // Store the item ID so we know which item to update when image is selected
-            window.currentUploadItemId = uniqueId;
-            document.getElementById('image-upload').click();
-        });
+        // Special handling for calibration card (ID Card)
+        if (item.isCalibrationCard) {
+            // Calibration card - no upload, just display text based on mode
+            textOverlay.textContent = "Universal reference point"; // Default for screen mode
+            textOverlay.dataset.screenText = "Universal reference point";
+            textOverlay.dataset.realLifeText = "Place your card here to register your body into digital space";
+            itemElement.dataset.isCalibrationCard = "true";
+        } else {
+            // Regular custom item - clickable for upload
+            textOverlay.textContent = "Click to upload image";
+            itemVisual.style.cursor = 'pointer';
+            
+            // Add click handler to open file picker and store which item was clicked
+            itemVisual.addEventListener('click', () => {
+                // Store the item ID so we know which item to update when image is selected
+                window.currentUploadItemId = uniqueId;
+                document.getElementById('image-upload').click();
+            });
+        }
+        
+        itemVisual.appendChild(textOverlay);
     }
     
     // Create the info section
@@ -483,6 +500,18 @@ function updateAllItems() {
             image: itemElement.dataset.image
         };
         updateItemSize(itemElement, item);
+        
+        // Update calibration card text based on mode
+        if (itemElement.dataset.isCalibrationCard === "true") {
+            const textOverlay = itemElement.querySelector('div:nth-child(2) div');
+            if (textOverlay && textOverlay.dataset.screenText && textOverlay.dataset.realLifeText) {
+                if (isRealLifeMode) {
+                    textOverlay.textContent = textOverlay.dataset.realLifeText;
+                } else {
+                    textOverlay.textContent = textOverlay.dataset.screenText;
+                }
+            }
+        }
     });
 }
 
