@@ -64,25 +64,20 @@ function initApp() {
     // Add ID card as default reference item
     addItemToComparison(defaultItems[0]);
 
-    // Add user's custom item (1cm x 1cm)
-    const customItem = {
-        name: "Your Item",
-        width: 10,
-        height: 10,
-        unit: "cm",
-        // image will be added via upload
-    };
-    addItemToComparison(customItem);
+    // NOTE: Custom item will be added by user via "Add to list" button
+    // No longer auto-adding "Your Item" on page load
     
     // Set up event listeners
     screenModeBtn.addEventListener('click', () => setMode('screen'));
     realLifeModeBtn.addEventListener('click', () => setMode('real-life'));
     addDefaultItemBtn.addEventListener('click', toggleDropdown);
     
-    document.getElementById('item-width').addEventListener('input', updateCustomItem);
-    document.getElementById('item-height').addEventListener('input', updateCustomItem);
-    document.getElementById('item-name').addEventListener('input', updateCustomItem);
-    document.getElementById('item-unit').addEventListener('change', updateCustomItem);
+    // NOTE: Removed auto-update listeners for item inputs
+    // Custom item will only be added when "Add to list" button is clicked
+    // document.getElementById('item-width').addEventListener('input', updateCustomItem);
+    // document.getElementById('item-height').addEventListener('input', updateCustomItem);
+    // document.getElementById('item-name').addEventListener('input', updateCustomItem);
+    // document.getElementById('item-unit').addEventListener('change', updateCustomItem);
     
     // Calibration controls
     calibrationSlider.addEventListener('input', () => {
