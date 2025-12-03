@@ -153,10 +153,10 @@ function initApp() {
         
         if (isUIHidden) {
             controller.style.display = 'none';
-            toggleUIBtn.textContent = 'Show UI';
+            toggleUIBtn.textContent = 'Show Controller';
         } else {
             controller.style.display = 'block';
-            toggleUIBtn.textContent = 'Hide UI';
+            toggleUIBtn.textContent = 'Hide Controller';
         }
     });
 }
@@ -307,15 +307,12 @@ function updateMinimapViewport() {
     const scrollLeft = comparisonArea.scrollLeft;
     const scrollTop = comparisonArea.scrollTop;
     
-    // Get minimap content offset (from panning)
-    const contentOffsetX = parseFloat(minimapContent.style.left) || 0;
-    const contentOffsetY = parseFloat(minimapContent.style.top) || 0;
-    
-    // Scale viewport dimensions and position, accounting for content offset
+    // Red box is positioned absolute to minimapContainer, NOT relative to minimapContent
+    // So we don't add content offset - it stays fixed while content pans
     minimapViewport.style.width = `${viewportWidth * minimapScale}px`;
     minimapViewport.style.height = `${viewportHeight * minimapScale}px`;
-    minimapViewport.style.left = `${(scrollLeft * minimapScale) + contentOffsetX}px`;
-    minimapViewport.style.top = `${(scrollTop * minimapScale) + contentOffsetY}px`;
+    minimapViewport.style.left = `${scrollLeft * minimapScale}px`;
+    minimapViewport.style.top = `${scrollTop * minimapScale}px`;
     minimapViewport.style.display = 'block';
 }
 
