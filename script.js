@@ -197,6 +197,14 @@ function setMode(mode) {
         document.body.style.backgroundColor = 'black';
         document.body.style.color = 'white';
         
+        // Update all name label borders to white
+        document.querySelectorAll('[data-item-id]').forEach(item => {
+            const nameDiv = item.querySelector('div:first-child');
+            if (nameDiv) {
+                nameDiv.style.borderColor = 'white';
+            }
+        });
+        
         // Check if calibration has been saved before
         const hasCalibrationBeenSaved = localStorage.getItem('calibrationSaved') === 'true';
         
@@ -220,6 +228,14 @@ function setMode(mode) {
         // Reset to white background and black text for Screen Mode
         document.body.style.backgroundColor = 'white';
         document.body.style.color = 'black';
+        
+        // Update all name label borders to black
+        document.querySelectorAll('[data-item-id]').forEach(item => {
+            const nameDiv = item.querySelector('div:first-child');
+            if (nameDiv) {
+                nameDiv.style.borderColor = 'black';
+            }
+        });
     }
     
     // Update all items to reflect the new mode
@@ -294,7 +310,7 @@ function addItemToComparison(item) {
     itemVisual.style.position = 'relative';
     itemVisual.style.overflow = 'hidden';
     itemVisual.style.margin = '0 auto';
-    itemVisual.style.border = '1px solid #ccc';
+    // Border removed - no border on visual area
     
     // Check if item has a predefined image (from defaultItems)
     const hasPredefinedImage = defaultItems.some(defaultItem => defaultItem.name === item.name && defaultItem.image);
