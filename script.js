@@ -89,7 +89,7 @@ function initApp() {
     document.getElementById('item-width').addEventListener('input', updatePreviewItem);
     document.getElementById('item-height').addEventListener('input', updatePreviewItem);
     document.getElementById('item-name').addEventListener('input', updatePreviewItem);
-    document.getElementById('item-unit').addEventListener('change', updatePreviewItem);
+    document.getElementById('item-unit').addEventListener('change', handleUnitChange);
     
     // Calibration controls
     calibrationSlider.addEventListener('input', () => {
@@ -489,6 +489,43 @@ function updatePreviewItem() {
     previewElement.dataset.width = width;
     previewElement.dataset.height = height;
     previewElement.dataset.unit = unit;
+}
+
+// Handle unit change by converting current values to new unit
+function handleUnitChange() {
+    const widthInput = document.getElementById('item-width');
+    const heightInput = document.getElementById('item-height');
+    const unitSelect = document.getElementById('item-unit');
+    
+    const currentWidth = parseFloat(widthInput.value) || 0;
+    const currentHeight = parseFloat(heightInput.value) || 0;
+    const newUnit = unitSelect.value;
+    
+    // Get the old unit from the preview element's dataset
+    const previewElement = document.querySelector('[data-is-preview="true"]');
+    if (!previewElement) {
+        updatePreviewItem();
+        return;
+    }
+    
+    const oldUnit = previewElement.dataset.unit || 'inch';
+    
+    // Convert current values from old unit to mm, then to new unit
+    const widthInMm = convertToMm(currentWidth, oldUnit);
+    const heightInMm = convertToMm(currentHeight, oldUnit);
+    
+    // Convert from mm to new unit
+    const newWidth = widthInMm / conversionToMm[newUnit];
+    const newHeight = heightInMm / conversionToMm[newUnit];
+    
+    // Update input fields with converted values
+    // Use appropriate decimal places based on unit
+    const decimalPlaces = ['mm', 'cm', 'inch', 'ft'].includes(newUnit) ? 2 : 5;
+    widthInput.value = newWidth.toFixed(decimalPlaces);
+    heightInput.value = newHeight.toFixed(decimalPlaces);
+    
+    // Update preview
+    updatePreviewItem();
 }
 
 // Confirm current preview item and create a new preview
