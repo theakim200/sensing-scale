@@ -41,6 +41,11 @@ let isRealLifeMode = false;
 // Custom item image URL
 let customItemImageUrl = null;
 
+// Minimap settings
+const ID_CARD_MIN_PIXELS = 2; // ID Card minimum width in minimap
+const ID_CARD_WIDTH_MM = 85.6; // ID Card actual width in mm
+let minimapScale = 1; // Current minimap scale factor
+
 // DOM elements
 const comparisonArea = document.getElementById('comparison-area');
 const screenModeBtn = document.getElementById('screen-mode');
@@ -52,6 +57,9 @@ const calibrationSection = document.getElementById('calibration-section');
 const calibrationSlider = document.getElementById('calibration-slider');
 const saveCalibrationBtn = document.getElementById('save-calibration');
 const editCalibrationBtn = document.getElementById('edit-calibration');
+const minimapContainer = document.getElementById('minimap-container');
+const minimapContent = document.getElementById('minimap-content');
+const minimapViewport = document.getElementById('minimap-viewport');
 
 // Initialize the app
 function initApp() {
@@ -126,6 +134,78 @@ function initApp() {
         pixelsPerMm = parseFloat(savedCalibration);
         calibrationSlider.value = pixelsPerMm;
     }
+    
+    // Initialize minimap
+    updateMinimap();
+    
+    // Update minimap on scroll
+    comparisonArea.addEventListener('scroll', updateMinimapViewport);
+}
+
+// Calculate minimap scale based on ID Card minimum size constraint
+function calculateMinimapScale() {
+    const comparisonWidth = comparisonArea.scrollWidth;
+    const comparisonHeight = comparisonArea.scrollHeight;
+    
+    // Calculate scale that would fit everything in 500x300
+    const scaleToFit = Math.min(
+        500 / comparisonWidth,
+        300 / comparisonHeight
+    );
+    
+    // Calculate scale based on ID Card minimum size (2px)
+    // ID Card width in current mode
+    let idCardWidthPx;
+    if (isRealLifeMode) {
+        idCardWidthPx = ID_CARD_WIDTH_MM * pixelsPerMm;
+    } else {
+        const scaleFactor = 0.8;
+        idCardWidthPx = ID_CARD_WIDTH_MM * scaleFactor;
+    }
+    
+    const scaleForIdCard = ID_CARD_MIN_PIXELS / idCardWidthPx;
+    
+    // Use the larger scale (less zoom out) to ensure ID Card is at least 2px
+    return Math.max(scaleToFit, scaleForIdCard);
+}
+
+// Update minimap display
+function updateMinimap() {
+    minimapScale = calculateMinimapScale();
+    
+    // Apply scale to minimap content
+    minimapContent.style.transform = `scale(${minimapScale})`;
+    
+    // Set minimap container size
+    const scaledWidth = comparisonArea.scrollWidth * minimapScale;
+    const scaledHeight = comparisonArea.scrollHeight * minimapScale;
+    
+    minimapContainer.style.width = `${Math.min(scaledWidth, 500)}px`;
+    minimapContainer.style.height = `${Math.min(scaledHeight, 300)}px`;
+    
+    // Clone comparison area items into minimap
+    minimapContent.innerHTML = '';
+    const items = comparisonArea.querySelectorAll('[data-item-id]');
+    items.forEach(item => {
+        const clone = item.cloneNode(true);
+        minimapContent.appendChild(clone);
+    });
+    
+    updateMinimapViewport();
+}
+
+// Update minimap viewport (red box) position and size
+function updateMinimapViewport() {
+    const viewportWidth = comparisonArea.clientWidth;
+    const viewportHeight = comparisonArea.clientHeight;
+    const scrollLeft = comparisonArea.scrollLeft;
+    const scrollTop = comparisonArea.scrollTop;
+    
+    // Scale viewport dimensions and position
+    minimapViewport.style.width = `${viewportWidth * minimapScale}px`;
+    minimapViewport.style.height = `${viewportHeight * minimapScale}px`;
+    minimapViewport.style.left = `${scrollLeft * minimapScale}px`;
+    minimapViewport.style.top = `${scrollTop * minimapScale}px`;
 }
 
 // Try to detect the screen's pixel density
@@ -216,6 +296,9 @@ function setMode(mode) {
     
     // Update all items to reflect the new mode
     updateAllItems();
+    
+    // Update minimap for new mode
+    setTimeout(updateMinimap, 0);
 }
 
 // Convert dimensions to millimeters
@@ -405,6 +488,9 @@ function addItemToComparison(item) {
     
     // Update its size
     updateItemSize(itemElement, item);
+    
+    // Update minimap
+    setTimeout(updateMinimap, 0); // Defer to allow DOM update
     
     // Return the unique ID
     return uniqueId;
