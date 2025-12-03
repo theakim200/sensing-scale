@@ -333,10 +333,8 @@ function addItemToComparison(item) {
         
         // Special handling for calibration card (ID Card)
         if (item.isCalibrationCard) {
-            // Calibration card - no upload, just display text based on mode
-            textOverlay.textContent = ""; // Empty in screen mode
-            textOverlay.dataset.screenText = "";
-            textOverlay.dataset.realLifeText = "Universal reference point";
+            // Calibration card - no upload, just display "Card"
+            textOverlay.textContent = "Card";
             itemElement.dataset.isCalibrationCard = "true";
         } else {
             // Regular custom item - clickable for upload
@@ -500,18 +498,6 @@ function updateAllItems() {
             image: itemElement.dataset.image
         };
         updateItemSize(itemElement, item);
-        
-        // Update calibration card text based on mode
-        if (itemElement.dataset.isCalibrationCard === "true") {
-            const textOverlay = itemElement.querySelector('div:nth-child(2) div');
-            if (textOverlay && textOverlay.dataset.screenText && textOverlay.dataset.realLifeText) {
-                if (isRealLifeMode) {
-                    textOverlay.textContent = textOverlay.dataset.realLifeText;
-                } else {
-                    textOverlay.textContent = textOverlay.dataset.screenText;
-                }
-            }
-        }
     });
 }
 
