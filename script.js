@@ -51,6 +51,7 @@ const zoomIndicator = document.getElementById('zoom-indicator');
 const calibrationSection = document.getElementById('calibration-section');
 const calibrationSlider = document.getElementById('calibration-slider');
 const saveCalibrationBtn = document.getElementById('save-calibration');
+const editCalibrationBtn = document.getElementById('edit-calibration');
 
 // Initialize the app
 function initApp() {
@@ -101,7 +102,14 @@ function initApp() {
     
     saveCalibrationBtn.addEventListener('click', () => {
         calibrationSection.style.display = 'none';
+        editCalibrationBtn.style.display = 'inline-block';
         localStorage.setItem('pixelsPerMm', pixelsPerMm);
+    });
+    
+    // Edit calibration button
+    editCalibrationBtn.addEventListener('click', () => {
+        calibrationSection.style.display = 'block';
+        editCalibrationBtn.style.display = 'none';
     });
     
     // Close dropdown when clicking outside
@@ -180,13 +188,21 @@ function setMode(mode) {
         screenModeBtn.style.color = '';
         realLifeModeBtn.style.backgroundColor = 'black';
         realLifeModeBtn.style.color = 'white';
-        calibrationSection.style.display = 'block';
+        
+        // Show calibration section or edit button based on whether calibration is saved
+        if (calibrationSection.style.display === 'none') {
+            editCalibrationBtn.style.display = 'inline-block';
+        } else {
+            calibrationSection.style.display = 'block';
+            editCalibrationBtn.style.display = 'none';
+        }
     } else {
         realLifeModeBtn.style.backgroundColor = '';
         realLifeModeBtn.style.color = '';
         screenModeBtn.style.backgroundColor = 'black';
         screenModeBtn.style.color = 'white';
         calibrationSection.style.display = 'none';
+        editCalibrationBtn.style.display = 'none';
     }
     
     // Update all items to reflect the new mode
