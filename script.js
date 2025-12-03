@@ -152,10 +152,12 @@ function setupMinimapInteractions() {
     let dragStartX, dragStartY;
     let scrollStartLeft, scrollStartTop;
     let minimapStartX, minimapStartY;
+    let hasDragged = false; // Track if actual dragging occurred
     
     // Red box (viewport) drag
     minimapViewport.addEventListener('mousedown', (e) => {
         isDraggingViewport = true;
+        hasDragged = false;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         scrollStartLeft = comparisonArea.scrollLeft;
@@ -170,6 +172,7 @@ function setupMinimapInteractions() {
         if (e.target === minimapViewport) return;
         
         isDraggingMinimap = true;
+        hasDragged = false;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         minimapStartX = minimapContent.offsetLeft || 0;
@@ -180,6 +183,7 @@ function setupMinimapInteractions() {
     // Mouse move handler
     document.addEventListener('mousemove', (e) => {
         if (isDraggingViewport) {
+            hasDragged = true;
             const deltaX = e.clientX - dragStartX;
             const deltaY = e.clientY - dragStartY;
             
@@ -187,6 +191,7 @@ function setupMinimapInteractions() {
             comparisonArea.scrollLeft = scrollStartLeft + (deltaX / minimapScale);
             comparisonArea.scrollTop = scrollStartTop + (deltaY / minimapScale);
         } else if (isDraggingMinimap) {
+            hasDragged = true;
             const deltaX = e.clientX - dragStartX;
             const deltaY = e.clientY - dragStartY;
             
@@ -199,12 +204,16 @@ function setupMinimapInteractions() {
     document.addEventListener('mouseup', () => {
         isDraggingViewport = false;
         isDraggingMinimap = false;
+        // Reset hasDragged after a short delay to prevent click event
+        setTimeout(() => {
+            hasDragged = false;
+        }, 10);
     });
     
     // Click to jump (option 3)
     minimapContainer.addEventListener('click', (e) => {
-        // Don't jump if clicking on viewport itself
-        if (e.target === minimapViewport) return;
+        // Don't jump if dragging occurred or clicking on viewport itself
+        if (hasDragged || e.target === minimapViewport) return;
         
         const rect = minimapContainer.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
@@ -230,7 +239,7 @@ function calculateMinimapScale() {
         300 / comparisonHeight
     );
     
-    // Calculate scale based on ID Card minimum size (2px)
+    // Calculate minimum scale based on ID Card size constraint (2px minimum)
     // ID Card width in current mode
     let idCardWidthPx;
     if (isRealLifeMode) {
@@ -240,10 +249,10 @@ function calculateMinimapScale() {
         idCardWidthPx = ID_CARD_WIDTH_MM * scaleFactor;
     }
     
-    const scaleForIdCard = ID_CARD_MIN_PIXELS / idCardWidthPx;
+    const minScaleForIdCard = ID_CARD_MIN_PIXELS / idCardWidthPx;
     
-    // Use the larger scale (less zoom out) to ensure ID Card is at least 2px
-    return Math.max(scaleToFit, scaleForIdCard);
+    // Use scaleToFit, but don't go below minScaleForIdCard (ID Card must be at least 2px)
+    return Math.max(scaleToFit, minScaleForIdCard);
 }
 
 // Update minimap display
