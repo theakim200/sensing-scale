@@ -140,6 +140,83 @@ function initApp() {
     
     // Update minimap on scroll
     comparisonArea.addEventListener('scroll', updateMinimapViewport);
+    
+    // Setup minimap interactions
+    setupMinimapInteractions();
+}
+
+// Setup minimap drag and click interactions
+function setupMinimapInteractions() {
+    let isDraggingViewport = false;
+    let isDraggingMinimap = false;
+    let dragStartX, dragStartY;
+    let scrollStartLeft, scrollStartTop;
+    let minimapStartX, minimapStartY;
+    
+    // Red box (viewport) drag
+    minimapViewport.addEventListener('mousedown', (e) => {
+        isDraggingViewport = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        scrollStartLeft = comparisonArea.scrollLeft;
+        scrollStartTop = comparisonArea.scrollTop;
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    
+    // Minimap background drag (panning)
+    minimapContainer.addEventListener('mousedown', (e) => {
+        // Only if not clicking on viewport
+        if (e.target === minimapViewport) return;
+        
+        isDraggingMinimap = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        minimapStartX = minimapContent.offsetLeft || 0;
+        minimapStartY = minimapContent.offsetTop || 0;
+        e.preventDefault();
+    });
+    
+    // Mouse move handler
+    document.addEventListener('mousemove', (e) => {
+        if (isDraggingViewport) {
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            
+            // Convert minimap delta to scroll delta
+            comparisonArea.scrollLeft = scrollStartLeft + (deltaX / minimapScale);
+            comparisonArea.scrollTop = scrollStartTop + (deltaY / minimapScale);
+        } else if (isDraggingMinimap) {
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            
+            minimapContent.style.left = `${minimapStartX + deltaX}px`;
+            minimapContent.style.top = `${minimapStartY + deltaY}px`;
+        }
+    });
+    
+    // Mouse up handler
+    document.addEventListener('mouseup', () => {
+        isDraggingViewport = false;
+        isDraggingMinimap = false;
+    });
+    
+    // Click to jump (option 3)
+    minimapContainer.addEventListener('click', (e) => {
+        // Don't jump if clicking on viewport itself
+        if (e.target === minimapViewport) return;
+        
+        const rect = minimapContainer.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Center viewport on click position
+        const viewportWidth = comparisonArea.clientWidth;
+        const viewportHeight = comparisonArea.clientHeight;
+        
+        comparisonArea.scrollLeft = (clickX / minimapScale) - (viewportWidth / 2);
+        comparisonArea.scrollTop = (clickY / minimapScale) - (viewportHeight / 2);
+    });
 }
 
 // Calculate minimap scale based on ID Card minimum size constraint
@@ -173,8 +250,11 @@ function calculateMinimapScale() {
 function updateMinimap() {
     minimapScale = calculateMinimapScale();
     
-    // Apply scale to minimap content
+    // Apply scale and flex layout to minimap content
     minimapContent.style.transform = `scale(${minimapScale})`;
+    minimapContent.style.display = 'flex';
+    minimapContent.style.flexDirection = 'row';
+    minimapContent.style.alignItems = 'flex-start';
     
     // Set minimap container size
     const scaledWidth = comparisonArea.scrollWidth * minimapScale;
