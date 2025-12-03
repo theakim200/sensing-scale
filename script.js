@@ -193,21 +193,6 @@ function setMode(mode) {
         realLifeModeBtn.style.backgroundColor = 'black';
         realLifeModeBtn.style.color = 'white';
         
-        // Change background to black and text to white for Real Life Mode
-        document.body.style.backgroundColor = 'black';
-        document.body.style.color = 'white';
-        
-        // Update all name label borders to white
-        document.querySelectorAll('[data-item-id]').forEach(item => {
-            const nameDiv = item.querySelector('div:first-child');
-            if (nameDiv) {
-                nameDiv.style.borderColor = 'white';
-            }
-        });
-        
-        // Update calibration section border to white
-        calibrationSection.style.borderColor = 'white';
-        
         // Check if calibration has been saved before
         const hasCalibrationBeenSaved = localStorage.getItem('calibrationSaved') === 'true';
         
@@ -227,21 +212,6 @@ function setMode(mode) {
         screenModeBtn.style.color = 'white';
         calibrationSection.style.display = 'none';
         editCalibrationBtn.style.display = 'none';
-        
-        // Reset to white background and black text for Screen Mode
-        document.body.style.backgroundColor = 'white';
-        document.body.style.color = 'black';
-        
-        // Update all name label borders to black
-        document.querySelectorAll('[data-item-id]').forEach(item => {
-            const nameDiv = item.querySelector('div:first-child');
-            if (nameDiv) {
-                nameDiv.style.borderColor = 'black';
-            }
-        });
-        
-        // Update calibration section border to black
-        calibrationSection.style.borderColor = 'black';
     }
     
     // Update all items to reflect the new mode
