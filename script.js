@@ -64,13 +64,20 @@ function initApp() {
     // Add ID card as default reference item
     addItemToComparison(defaultItems[0]);
 
-    // NOTE: Custom item will be added by user via "Add to list" button
-    // No longer auto-adding "Your Item" on page load
+    // Add initial preview item for user to work on
+    const initialPreviewItem = {
+        name: "Your Item",
+        width: 10,
+        height: 10,
+        unit: "inch",
+        isPreview: true // Mark this as the preview item
+    };
+    window.currentPreviewItemId = addItemToComparison(initialPreviewItem);
     
     // Add to list button handler
     const addToListBtn = document.getElementById('add-to-list');
     if (addToListBtn) {
-        addToListBtn.addEventListener('click', addCustomItemToList);
+        addToListBtn.addEventListener('click', confirmAndAddNewPreview);
     }
     
     // Set up event listeners
@@ -78,12 +85,11 @@ function initApp() {
     realLifeModeBtn.addEventListener('click', () => setMode('real-life'));
     addDefaultItemBtn.addEventListener('click', toggleDropdown);
     
-    // NOTE: Removed auto-update listeners for item inputs
-    // Custom item will only be added when "Add to list" button is clicked
-    // document.getElementById('item-width').addEventListener('input', updateCustomItem);
-    // document.getElementById('item-height').addEventListener('input', updateCustomItem);
-    // document.getElementById('item-name').addEventListener('input', updateCustomItem);
-    // document.getElementById('item-unit').addEventListener('change', updateCustomItem);
+    // Real-time preview: update preview item as user types
+    document.getElementById('item-width').addEventListener('input', updatePreviewItem);
+    document.getElementById('item-height').addEventListener('input', updatePreviewItem);
+    document.getElementById('item-name').addEventListener('input', updatePreviewItem);
+    document.getElementById('item-unit').addEventListener('change', updatePreviewItem);
     
     // Calibration controls
     calibrationSlider.addEventListener('input', () => {
@@ -208,6 +214,16 @@ function addItemToComparison(item) {
     // Generate unique ID for this item instance
     const uniqueId = Date.now() + Math.random();
     
+    // If this is a preview item, check if there's already a preview and update it instead
+    if (item.isPreview) {
+        const existingPreview = document.querySelector('[data-is-preview="true"]');
+        if (existingPreview) {
+            // Update existing preview instead of creating new one
+            updateItemSize(existingPreview, item);
+            return existingPreview.dataset.itemId;
+        }
+    }
+    
     // Create new item container
     const itemElement = document.createElement('div');
     itemElement.style.display = 'inline-block';
@@ -219,6 +235,11 @@ function addItemToComparison(item) {
     itemElement.dataset.width = item.width;
     itemElement.dataset.height = item.height;
     itemElement.dataset.unit = item.unit;
+    
+    // Mark as preview if applicable
+    if (item.isPreview) {
+        itemElement.dataset.isPreview = "true";
+    }
     
     // For custom item, use the uploaded image if available
     if (item.name === "Your Item" && customItemImageUrl) {
@@ -346,6 +367,9 @@ function addItemToComparison(item) {
     
     // Update its size
     updateItemSize(itemElement, item);
+    
+    // Return the unique ID
+    return uniqueId;
 }
 
 // Update the size of an item based on the current mode
@@ -440,55 +464,75 @@ function updateAllItems() {
     });
 }
 
-// Update the custom item from the input fields
-function updateCustomItem() {
+// Update the preview item in real-time as user types
+function updatePreviewItem() {
+    const previewElement = document.querySelector('[data-is-preview="true"]');
+    if (!previewElement) return;
+    
     const name = document.getElementById('item-name').value || 'Your Item';
     const width = parseFloat(document.getElementById('item-width').value) || 0;
     const height = parseFloat(document.getElementById('item-height').value) || 0;
     const unit = document.getElementById('item-unit').value;
     
-    const customItem = {
+    const previewItem = {
         name: name,
         width: width,
         height: height,
-        unit: unit
+        unit: unit,
+        isPreview: true
     };
     
-    // Keep using the uploaded image if available
-    if (customItemImageUrl) {
-        customItem.image = customItemImageUrl;
-    }
+    updateItemSize(previewElement, previewItem);
     
-    addItemToComparison(customItem);
+    // Update dataset
+    previewElement.dataset.name = name;
+    previewElement.dataset.width = width;
+    previewElement.dataset.height = height;
+    previewElement.dataset.unit = unit;
 }
 
-// Add custom item to list from input fields
-function addCustomItemToList() {
-    const name = document.getElementById('item-name').value || 'Your Item';
-    const width = parseFloat(document.getElementById('item-width').value) || 0;
-    const height = parseFloat(document.getElementById('item-height').value) || 0;
-    const unit = document.getElementById('item-unit').value;
+// Confirm current preview item and create a new preview
+function confirmAndAddNewPreview() {
+    const previewElement = document.querySelector('[data-is-preview="true"]');
+    if (!previewElement) return;
     
     // Validate inputs
+    const width = parseFloat(document.getElementById('item-width').value) || 0;
+    const height = parseFloat(document.getElementById('item-height').value) || 0;
+    
     if (width <= 0 || height <= 0) {
         alert('Please enter valid width and height values');
         return;
     }
     
-    const customItem = {
-        name: name,
-        width: width,
-        height: height,
-        unit: unit
-        // No image - user will add it by clicking the item after it's added
-    };
-    
-    addItemToComparison(customItem);
+    // Remove preview marker from current item (it's now confirmed)
+    delete previewElement.dataset.isPreview;
     
     // Reset input fields
-    document.getElementById('item-name').value = 'Your Item';
+    document.getElementById('item-name').value = '';
     document.getElementById('item-width').value = '10';
     document.getElementById('item-height').value = '10';
+    document.getElementById('item-unit').value = 'inch';
+    
+    // Create new preview item
+    const newPreviewItem = {
+        name: "Your Item",
+        width: 10,
+        height: 10,
+        unit: "inch",
+        isPreview: true
+    };
+    window.currentPreviewItemId = addItemToComparison(newPreviewItem);
+}
+
+// Legacy function kept for compatibility
+function updateCustomItem() {
+    updatePreviewItem();
+}
+
+// Legacy function - no longer used but kept for compatibility
+function addCustomItemToList() {
+    confirmAndAddNewPreview();
 }
 
 // Set up image upload functionality
