@@ -7,11 +7,27 @@ body {
 #comparison-area {
     display: flex;
     flex-direction: row;
-    overflow: scroll;
+    overflow-x: scroll;
+    overflow-y: hidden; /* Hide vertical scrollbar */
 }
 #dropdown-menu {
     z-index: 100;
 }
 img {
     object-fit: fill !important;
+}
+/* Hide scrollbar for webkit browsers but keep functionality */
+#comparison-area::-webkit-scrollbar {
+    height: 8px; /* Keep horizontal scrollbar */
+}
+#comparison-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+#comparison-area::-webkit-scrollbar-thumb {
+    background: #888;
+}
+/* Hide vertical scrollbar on body */
+body {
+    overflow-y: auto;
+    overflow-x: hidden;
 }

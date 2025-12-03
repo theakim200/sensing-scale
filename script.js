@@ -205,6 +205,9 @@ function setMode(mode) {
             }
         });
         
+        // Update calibration section border to white
+        calibrationSection.style.borderColor = 'white';
+        
         // Check if calibration has been saved before
         const hasCalibrationBeenSaved = localStorage.getItem('calibrationSaved') === 'true';
         
@@ -236,6 +239,9 @@ function setMode(mode) {
                 nameDiv.style.borderColor = 'black';
             }
         });
+        
+        // Update calibration section border to black
+        calibrationSection.style.borderColor = 'black';
     }
     
     // Update all items to reflect the new mode
