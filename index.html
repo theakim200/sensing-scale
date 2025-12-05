@@ -25,16 +25,16 @@
                         <td>units:</td>
                         <td>
                             <select id="item-unit">
+                                <option value="μm">μm</option>
                                 <option value="mm">mm</option>
-                                <option value="cm">cm</option>
+                                <option value="cm" selected>cm</option>
                                 <option value="m">m</option>
                                 <option value="km">km</option>
-                                <option value="inch" selected>inch</option>
+                                <option value="pt">pt</option>
+                                <option value="inch">inch</option>
                                 <option value="ft">ft</option>
                                 <option value="yard">yard</option>
                                 <option value="mile">mile</option>
-                                <option value="pt">pt</option>
-                                <option value="μm">μm</option>
                             </select>
                         </td>
                         <td><button id="add-to-list">Add</button></td>
@@ -54,7 +54,7 @@
                 </div>
 
                 <!-- Calibration section -->
-                <div id="calibration-section" style="display: none; margin-top: 20px; border: 1px solid black; padding: 10px;">
+                <div id="calibration-section" style="display: none; margin-top: 5px; border: 1px solid black; padding: 10px;">
                     <h3>Calibration</h3>
                     <p>Place your card on screen and match it to the box below. This calibration registers your body into digital space.</p>
                     <input type="range" id="calibration-slider" min="1" max="10" step="0.1" value="3.78">
@@ -62,7 +62,7 @@
                 </div>
             </div>
             
-            <div style="margin-top: 10px;">
+            <div style="margin-top: 5px;">
                 <button id="edit-calibration" style="display: none;">Edit Calibration</button>
                 <button id="toggle-ui">Hide Controller</button>
             </div>
