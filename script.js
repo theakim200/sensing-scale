@@ -15,7 +15,7 @@ const defaultItems = [
     { name: "Post-it Note", width: 76, height: 76, unit: "mm", image: "postit_note.png" },
     { name: "USA McDonald’s Medium Cup", width: 90, height: 160, unit: "mm", image: "src/coca_cola.png" },
     { name: "Japan McDonald’s Medium Cup", width: 85, height: 135, unit: "mm", image: "src/coca_cola.png" },
-    { name: "Statue of Liberty", width: 16000, height: 40355, unit: "mm", image: "src/statue-of-liberty.png" }
+    { name: "Statue of Liberty", width: 16000, height: 40355, unit: "mm", image: "src/liberty.png" }
 ];
 
 // Constants for unit conversion
